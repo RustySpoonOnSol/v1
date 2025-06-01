@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Crush AI 💘</title>
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.41.3/lib/index.iife.min.js"></script>
+    <style>
+      body { font-family: sans-serif; background: #fff0f5; padding: 2rem; text-align: center; }
+      input, button { padding: 0.5rem; font-size: 1rem; }
+      #chat { margin-top: 2rem; }
+      .bubble { background: #ffebf0; padding: 1rem; margin: 0.5rem; border-radius: 1rem; }
+    </style>
+  </head>
+  <body>
+    <h1>💘 Crush AI 💘</h1>
+    <button onclick="connectWallet()">Connect Wallet</button>
+    <p id="wallet-status">Wallet: Not connected</p>
+    <p>Hey there hot stuff... What’s on your mind? 💋</p>
+    <input id="input" placeholder="Type something..." />
+    <button onclick="send()">Send</button>
+    <div id="chat"></div>
+
+    <script>
+      let userWallet = null;
+
+      async function connectWallet() {
+        if (window.solana && window.solana.isPhantom) {
+          try {
+            const resp = await window.solana.connect();
+            userWallet = resp.publicKey.toString();
+            document.getElementById('wallet-status').innerText = "Wallet: " + userWallet;
+          } catch (err) {
+            alert("Wallet connection rejected.");
+          }
+        } else {
+          alert("Phantom Wallet not found. Please install it.");
+        }
+      }
+
+      async function send() {
+        const input = document.getElementById('input');
+        const chat = document.getElementById('chat');
+        const userMsg = input.value;
+
+        if (!userWallet) {
+          alert("Please connect your wallet first.");
+          return;
+        }
+
+        chat.innerHTML += `<div class='bubble'><strong>You:</strong> ${userMsg}</div>`;
+
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: userMsg, wallet: userWallet })
+        });
+
+        const data = await res.json();
+        const reply = data.reply || '[No reply or error]';
+        chat.innerHTML += `<div class='bubble'><strong>Crush AI:</strong> ${reply}</div>`;
+        input.value = '';
+      }
+    </script>
+  </body>
+</html>
